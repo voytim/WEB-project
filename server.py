@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, url_for
 from flask_login import LoginManager, login_user, logout_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, BooleanField, SubmitField, EmailField, StringField
@@ -16,7 +16,6 @@ login_manager.init_app(app)
 db_session.global_init("db/blogs.db")
 dbs = db_session.create_session()
 dbs.commit()
-INFO = []
 
 
 class LoginForm(FlaskForm):
@@ -95,19 +94,18 @@ def register():
 @app.route('/add_ing', methods=['GET', 'POST'])
 @login_required
 def add_ing():
-    global INFO
     form = IngForm()
     if form.validate_on_submit():
         ings = form.ings.data
-        INFO = get_dish(ings, 10)
-        return redirect("/dishes")
+        return redirect(url_for('dishes', ings=ings))
     return render_template('add_ing.html', form=form)
 
 
-@app.route('/dishes', methods=['GET', 'POST'])
+@app.route('/dishes<ings>', methods=['GET', 'POST'])
 @login_required
-def dishes():
-    return render_template('dishes.html', INFO=INFO)
+def dishes(ings):
+    dishes_list = get_dish(ings, 10)
+    return render_template('dishes.html', dishes=dishes_list)
 
 
 if __name__ == '__main__':
